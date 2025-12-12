@@ -12,17 +12,17 @@ class Counter:
         self.count = 0
         
     def increment(self): 
-        ''' '''
         self.count += 1
         
     def reset(self):
         self.count = 0
         
     def __str__(self):
-        return f'{self.name}, {self.count}'
+        return f'the {self.name} task has {self.count} runstreaks'
         
     def store(self, db):
         add_counter(db, self.name, self.description)
         
     def add_event(self, db, date: str = None):
+        # Register one increment event in the database
         increment_counter(db, self.name, date)
