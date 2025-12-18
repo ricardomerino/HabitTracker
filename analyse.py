@@ -1,10 +1,17 @@
 # analyse.py
 from db import get_counter_data
-def calculate_count(db, counter):
-    ''' Calculate the count of the counter.
-    :param db: on initialized sqlite3 database connection
-    :param counter: name of hte counter present in the DB
-    :return
-    : length of the counter increment events '''
-    data = get_counter_data(db, counter)
-    return len(data)
+def calculate_count(db, name):
+    '''
+    Return all the rows of 'tracker.csv' with the required 
+    Habit as a dictionary
+    '''
+    rows = get_counter_data(db, name)
+    print(rows)
+    if not rows:
+        return 0, 0
+
+    # Returns: max_runstreak and total_attempts of a given Habit
+    max_runstreak = max(r['runstreak'] for r in rows)
+    total_attempts = sum(r['attempts'] for r in rows)
+
+    return max_runstreak, total_attempts
