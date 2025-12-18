@@ -1,5 +1,5 @@
 # counter.py
-from db import add_counter, increment_counter, get_counter_data
+from db import add_counter, increment_tracker, get_tracker_data
 from datetime import datetime, timedelta, date
 
 class Counter:
@@ -16,10 +16,10 @@ class Counter:
         
     def add_event(self, db, event_date: str = None):
         # Register one increment event in the database
-        event_day = date.today() if event_date is None else event_date
+        event_day = date.today()
         
         # Previous represents all previous rows in 'tracker.csv'
-        previous = get_counter_data(db, self.name)
+        previous = get_tracker_data(db, self.name)
 
         freq_value = int(self.frequence)
 
@@ -29,11 +29,11 @@ class Counter:
             last_day = datetime.strptime(last['date'], '%Y-%m-%d').date()
             # Extract last runstreak and attempts values from the last dictionary
             last_runstreak = int(last.get('runstreak', 0))
-            # print(last_runstreak)
+            # print(last_runstreak) to debug
             last_attempts = int(last.get('attempts', 1))
-            # print(last_attempts)
+            # print(last_attempts) to debug
             days_since_last = (event_day - last_day).days
-            # print(days_since_last)
+            # print(days_since_last) to debug
     
             if days_since_last <= freq_value:
                 # check-off Habit in the defined frequence. Good done!
@@ -52,5 +52,5 @@ class Counter:
             new_attempts = 1
     
         # call db.py and save in 'tracker.csv' : date, runstreak, attempts
-        increment_counter(db, self.name, event_date=event_day.isoformat(),
+        increment_tracker(db, self.name, event_date=event_day.isoformat(),
                           runstreak=new_runstreak, attempts=new_attempts)

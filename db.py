@@ -39,26 +39,19 @@ def add_counter(db, name, description, frequence):
     save_table('counter.csv', db['counter'])
 
 
-def increment_counter(db, name, event_date, runstreak, attempts):
+def increment_tracker(db, name, event_date, runstreak, attempts):
     db["tracker"].append([event_date, name, str(runstreak), str(attempts)])
     save_table("tracker.csv", db["tracker"])
 
-def get_all_counters(db):
-    '''
-    Return all the rows of 'counter.csv' as a dictionary
-    '''
-    return [row[0] for row in db['counter']]
-
 def get_counter_frequence(db, name):
+    # Return frequence of the 'counter' rows of the dictionary
     for row in db["counter"]:
         if row[0] == name:
             return int(row[2])
     return 1
 
-def get_counter_data(db, name):
-    '''
-    Return all the rows of 'tracker.csv' as a dictionary
-    '''
+def get_tracker_data(db, name):
+    # Return the rows of the dictionary 'tracker' as a dictionary all_rows
     all_rows = []
     for row in db['tracker']:
         if row[1] == name:
@@ -71,9 +64,7 @@ def get_counter_data(db, name):
     return all_rows
 
 def display_table(db):
-    '''
-    Transforms the dictionary into a table that can be displayed
-    '''
+    #Transforms the dictionary into a table that can be displayed
     converted = {
     'Habit': [item[0] for item in db['counter']],
     'Description': [item[1] for item in db['counter']],

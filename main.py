@@ -10,7 +10,7 @@ import pandas as pd
 import db
 importlib.reload(db)
 
-from db import get_db, get_counter_data, get_counter_frequence
+from db import get_db, get_tracker_data, get_counter_frequence
 from counter import Counter
 from analyse import calculate_count
 from timer import TimeEngine
@@ -67,7 +67,7 @@ def cli():
             # Add row to tracker table
             counter.add_event(db_instance, time_engine.get_current_time().date())
 
-            data = get_counter_data(db_instance, name)
+            data = get_tracker_data(db_instance, name)
             last = data[-1]
 
             print(
