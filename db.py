@@ -49,6 +49,12 @@ def get_counter_frequence(db, name):
         if row[0] == name:
             return int(row[2])
     return 1
+    
+def get_all_counters(db):
+    '''
+    Return the list of counter names
+    '''
+    return [row[0] for row in db['counter']]
 
 def get_tracker_data(db, name):
     # Return the rows of the dictionary 'tracker' as a dictionary all_rows

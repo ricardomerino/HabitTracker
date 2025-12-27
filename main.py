@@ -10,9 +10,9 @@ import pandas as pd
 import db
 importlib.reload(db)
 
-from db import get_db, get_tracker_data, get_counter_frequence
+from db import get_db, get_tracker_data, get_counter_frequence, display_table
 from counter import Counter
-from analyse import calculate_count
+from analyse import analyse_menu
 from timer import TimeEngine
 
 
@@ -28,6 +28,7 @@ def cli():
     # Configurates the time simulation engine (60min/sec)
     time_engine = TimeEngine(tick_minutes=60, real_interval=1)
     # time_engine = TimeEngine() # Default 10min/sec
+    
     # Defines an Example Table with 5 Habits with 3 different Frequences
     for i in range(5):
         example = {
@@ -37,7 +38,17 @@ def cli():
             'Frequence (days)': ['30', '1', '1', '3', '3'],
     }
     df = pd.DataFrame(example)
-    print(f'Example of Habits\n\n{df}\n\n Welcome to the Habit Tracker CLI!')
+    
+# Open or create the database
+    db_instance = get_db()
+    # Prepare the Task data in a intuitive Table for the user
+    db_display = display_table(db_instance)
+    display_tasks = pd.DataFrame(db_display)
+
+    # Setup the TimeEngine
+    time_engine = TimeEngine(tick_minutes=60, real_interval=1)
+
+    # Starts the Main 
     questionary.confirm('Are you ready?').ask()  # Ask user to start
 
     stop = False
@@ -59,6 +70,8 @@ def cli():
             counter.store(db_instance)  # Save to database
 
         elif choice == 'Increment':
+            # Displays the Table of the Tasks in a intuitive way
+            print(f'These are the habits you can complete now\n\n{display_tasks}\n\n')
             # Increment and register the event in database
             name = questionary.text("What's the name of your counter?").ask()
             
@@ -67,8 +80,8 @@ def cli():
             # Add row to tracker table
             counter.add_event(db_instance, time_engine.get_current_time().date())
 
-            data = get_tracker_data(db_instance, name)
-            last = data[-1]
+            accoplished_data = get_tracker_data(db_instance, name)
+            last = accoplished_data[-1]
 
             print(
                 f"Habit '{name}' incremented successfully \n"
@@ -77,11 +90,8 @@ def cli():
             )
 
         elif choice == 'Analyse':
-            # Count events related to chosen counter
-            name = questionary.text("What's the name of your counter?").ask()
-            max_runstreak, total_attempts = calculate_count(db_instance, name)
-            print(f'{name} has been maintained a max runstreak of {max_runstreak} '
-                  f'in a total of {total_attempts} attempts')
+            # call submenu for Anlyse
+            analyse_menu(db_instance)
 
         elif choice == 'Run Time Engine':
             # Start simulated time progression

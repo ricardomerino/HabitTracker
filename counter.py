@@ -14,9 +14,12 @@ class Counter:
     def store(self, db):
         add_counter(db, self.name, self.description, self.frequence)
         
-    def add_event(self, db, event_date: str = None):
+    def add_event(self, db, event_date = None):
         # Register one increment event in the database
-        event_day = date.today()
+        if event_date:
+            event_day = event_date
+        else:
+            event_day = date.today()
         
         # Previous represents all previous rows in 'tracker.csv'
         previous = get_tracker_data(db, self.name)
