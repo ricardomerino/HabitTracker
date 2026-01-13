@@ -69,6 +69,61 @@ def get_tracker_data(db, name):
             })
     return all_rows
 
+def modify_habit(db, old_name, new_name, new_description, new_frequence):
+    '''
+    Modify a habit:
+    - name change: update counter.csv + tracker.csv
+    - description change: only counter.csv
+    - frequence change: reset tracker.csv records for that habit
+    '''
+
+    # Detect changes
+    name_changed = old_name != new_name
+    freq_changed = False
+
+    # Update dictionary 'counter' and save info in counter.csv
+    for row in db['counter']:
+        if row[0] == old_name:
+            if row[2] != str(new_frequence):
+                freq_changed = True
+            row[0] = new_name
+            row[1] = new_description
+            row[2] = str(new_frequence)
+            break
+
+    save_table('counter.csv', db['counter'])
+
+    # Update dictionary tracker and save info in tracker.csv
+    new_tracker = []
+    for row in db['tracker']:
+        date_, name, runstreak, attempts = row
+
+        # remove all records if frequency changed
+        if freq_changed and name == old_name:
+            continue
+
+        # rename habit in tracker
+        if name_changed and name == old_name:
+            name = new_name
+
+        new_tracker.append([date_, name, runstreak, attempts])
+
+    db['tracker'] = new_tracker
+    save_table('tracker.csv', db['tracker'])
+
+def erase_habit(db, name):
+    '''
+    Erase a habit completely from dictionary, counter.csv and tracker.csv
+    '''
+
+    # remove from counter
+    db['counter'] = [row for row in db['counter'] if row[0] != name]
+    save_table('counter.csv', db['counter'])
+
+    # remove from tracker
+    db['tracker'] = [row for row in db['tracker'] if row[1] != name]
+    save_table('tracker.csv', db['tracker'])
+
 def display_table(db):
     #Transforms the dictionary into a table that can be displayed
     converted = {

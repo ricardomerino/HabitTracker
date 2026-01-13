@@ -10,7 +10,14 @@ import pandas as pd
 import db
 importlib.reload(db)
 
-from db import get_db, get_tracker_data, get_counter_frequence, display_table
+from db import (
+    get_db,
+    get_tracker_data,
+    get_counter_frequence,
+    display_table,
+    modify_habit,
+    erase_habit
+)
 from counter import Counter
 from analyse import analyse_menu
 from timer import TimeEngine
@@ -42,8 +49,8 @@ def cli():
 # Open or create the database
     db_instance = get_db()
     # Prepare the Task data in a intuitive Table for the user
-    db_display = display_table(db_instance)
-    display_tasks = pd.DataFrame(db_display)
+    # db_display = display_table(db_instance)
+    # display_tasks = pd.DataFrame(db_display)
 
     # Setup the TimeEngine
     time_engine = TimeEngine(tick_minutes=60, real_interval=1)
@@ -54,20 +61,67 @@ def cli():
     stop = False
 
     while not stop:
+        # Transform with Pandas the 'db_instance' date into an intuitive Table for the user
+        db_display = display_table(db_instance)
+        display_tasks = pd.DataFrame(db_display)
+
         # Present choices to the user using questionary
         choice = questionary.select(
             f'What do you want to do?',
-            choices=['Create', 'Increment', 'Analyse', 'Run Time Engine', 
-            'Display Virtual Time', 'Exit']
+            choices=['Habits', 'Increment', 'Analyse', 'Run Time Engine', 'Display Virtual Time', 'Exit']
         ).ask()
 
-        if choice == 'Create':
-            # Ask for description and store a new counter in DB
-            name = questionary.text("What's the name of your Habit?").ask()
-            desc = questionary.text("What's the description of your Habit?").ask()
-            freq = questionary.text("What frequency in days you want to achieve this Habit?").ask()
-            counter = Counter(name, desc, freq)  # Create object
-            counter.store(db_instance)  # Save to database
+        if choice == 'Habits':
+            # submenu for Habits
+            h_choice = questionary.select(
+                'Habits - what do you want?',
+                choices=['Create', 'Modify', 'Erase', 'Back']
+            ).ask()
+
+            if h_choice == 'Create':
+                # Displays the Table of the Tasks in a intuitive way
+                print(f'These are the Habits you have already introduced\n\n{display_tasks}\n\n')
+                # Requests the Name, Description and Frequence for the Habit
+                name = questionary.text("What's the name of your Habit?").ask()
+                desc = questionary.text("What's the description of your Habit?").ask()
+                freq = questionary.text("What's the frequency in days you want to achieve?").ask()
+                # Call 
+                counter = Counter(name, desc, int(freq))
+                counter.store(db_instance)
+
+            elif h_choice == 'Modify':
+                # Displays the Table of the Tasks in a intuitive way
+                print(f'Which Habits you want to modify\n\n{display_tasks}\n\n')
+                # Requests the Name, Description and Frequence for the Habit
+                old_name = questionary.text("What's the CURRENT name of the Habit?").ask()
+                new_name = questionary.text("What's the NEW name of the Habit?").ask()
+                desc = questionary.text("What's the NEW description of your Habit?").ask()
+                freq = questionary.text("What's the NEW frequency in days?").ask()
+
+                modify_habit(
+                    db_instance,
+                    old_name=old_name,
+                    new_name=new_name,
+                    new_description=desc,
+                    new_frequence=int(freq)
+                )
+
+                print(f"Habit '{old_name}' modified successfully.")
+
+            elif h_choice == 'Erase':
+                # Displays the Table of the Tasks in a intuitive way
+                print(f'Which Habits you want to erase\n\n{display_tasks}\n\n')
+                name = questionary.text("What's the name of the Habit you want to erase?").ask()
+                confirm = questionary.confirm(
+                    f"Are you sure you want to permanently erase '{name}'?\n"
+                    f"All history will be lost."
+                ).ask()
+
+                if confirm:
+                    erase_habit(db_instance, name)
+                    print(f"Habit '{name}' erased successfully.") 
+
+            # 'Back' goes back to the main menu
 
         elif choice == 'Increment':
             # Displays the Table of the Tasks in a intuitive way
